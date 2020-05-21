@@ -1,0 +1,234 @@
+Python codes from datacamp
+
+STATISTICAL THINKING PART 1
+
+sns.set()  - to set sns as default
+
+_ = plt.hist(versicolor_petal_length)  - dummy variable
+
+
+--Code for histogram
+
+# Import numpy
+import numpy as np
+
+# Compute number of data points: n_data
+n_data = len(versicolor_petal_length)
+
+# Number of bins is the square root of number of data points: n_bins
+n_bins = np.sqrt(n_data)
+
+# Convert number of bins to integer: n_bins
+n_bins = int(n_bins)
+
+# Plot the histogram
+_ = plt.hist(versicolor_petal_length, bins=n_bins)
+
+# Label axes
+_ = plt.xlabel('petal length (cm)')
+_ = plt.ylabel('count')
+
+# Show histogram
+plt.show()
+
+
+-- Code for ecdf
+def ecdf(data):
+    """Compute ECDF for a one-dimensional array of measurements."""
+    # Number of data points: n
+    n = len(data)
+
+    # x-data for the ECDF: x
+    x = np.sort(data)
+
+    # y-data for the ECDF: y
+    y = np.arange(1, n+1) / n
+
+    return x, y
+	
+--Plot ecdf
+
+# Compute ECDF for versicolor data: x_vers, y_vers
+x_vers, y_vers = ecdf(versicolor_petal_length)
+
+# Generate plot
+_ =plt.plot(x_vers, y_vers, marker = '.',linestyle = 'none')
+
+# Label the axes
+_ = plt.xlabel('Versicolor petals')
+_ = plt.ylabel('ecdf')
+
+
+# Display the plot
+plt.show()
+
+
+#Percentiles
+
+# Specify array of percentiles: percentiles
+percentiles = np.array([2.5,25,50,75,97.5])
+
+# Compute percentiles: ptiles_vers
+ptiles_vers = np.percentile(versicolor_petal_length,percentiles)
+
+# Print the result
+print(ptiles_vers)
+
+
+#Histogram
+
+# Compute bin edges: bins
+bins = np.arange(0, max(n_defaults) + 1.5) - 0.5
+
+# Generate histogram
+_ = plt.hist(n_defaults, normed=True, bins=bins)
+
+# Label axes
+_ = plt.xlabel('number of defaults out of 100 loans')
+_ = plt.ylabel('PMF')
+
+# Show the plot
+plt.show()
+
+
+STATISTICAL THINKING PART 2
+
+
+# Plot the theoretical CDFs
+plt.plot(x_theor, y_theor)
+plt.plot(x, y, marker='.', linestyle='none')
+plt.margins(0.02)
+plt.xlabel('Games between no-hitters')
+plt.ylabel('CDF')
+
+# Take samples with half tau: samples_half
+samples_half = np.random.exponential(tau/2, 10000)
+
+# Take samples with double tau: samples_double
+samples_double = np.random.exponential(2*tau, 10000)
+
+# Generate CDFs from these samples
+x_half, y_half = ecdf(samples_half)
+x_double, y_double = ecdf(samples_double)
+
+# Plot these CDFs as lines
+_ = plt.plot(x_half, y_half)
+_ = plt.plot(x_double, y_double)
+
+# Show the plot
+plt.show()
+
+
+# Specify slopes to consider: a_vals
+a_vals = np.linspace(0, 0.1, 200)
+
+# Initialize sum of square of residuals: rss
+rss = np.empty_like(a_vals)
+
+# Compute sum of square of residuals for each value of a_vals
+for i, a in enumerate(a_vals):
+    rss[i] = np.sum((y_data - a*x_data - b)**2)
+
+# Plot the RSS
+plt.plot(rss, a_vals, '-')
+plt.xlabel('slope (children per woman / percent illiterate)')
+plt.ylabel('sum of square of residuals')
+
+plt.show()
+
+
+
+# Make bee swarm plot
+_ = sns.swarmplot(x='ID', y='impact_force', data=df)
+
+# Label axes
+_ = plt.xlabel('frog')
+_ = plt.ylabel('impact force (N)')
+
+# Show the plot
+plt.show()
+
+ECDF
+
+# Compute ECDFs
+x_1975, y_1975 = ecdf(bd_1975)
+x_2012, y_2012 = ecdf(bd_2012)
+
+# Plot the ECDFs
+_ = plt.plot(x_1975, y_1975, marker='.', linestyle='none')
+_ = plt.plot(x_2012, y_2012, marker='.', linestyle='none')
+
+# Set margins
+plt.margins(0.02)
+
+# Add axis labels and legend
+_ = plt.xlabel('beak depth (mm)')
+_ = plt.ylabel('ECDF')
+_ = plt.legend(('1975', '2012'), loc='lower right')
+
+# Show the plot
+plt.show()
+
+
+Bootstrap functions:
+
+def draw_bs_reps(data, func, size=1):   ----replica ie applies a function such as mean and stores in array
+    """Draw bootstrap replicates."""
+
+    # Initialize array of replicates: bs_replicates
+    bs_replicates = np.empty(size)
+
+    # Generate replicates
+    for i in range(size):
+        bs_replicates[i] = bootstrap_replicate_1d(data,func)
+
+    return bs_replicates
+	
+	
+def bootstrap_replicate_1d(data, func):     ---- makes a random sample of a data by randomly drawing values from len(data)
+    """Generate bootstrap replicate of 1D data."""
+    bs_sample = np.random.choice(data, len(data))
+    return func(bs_sample)
+	
+Confidence Interval
+
+# Compute the difference of the sample means: mean_diff
+mean_diff = np.mean(bd_2012) - np.mean(bd_1975)
+
+# Get bootstrap replicates of means
+bs_replicates_1975 = draw_bs_reps(bd_1975, np.mean, 10000)
+bs_replicates_2012 = draw_bs_reps(bd_2012, np.mean, 10000)
+
+# Compute samples of difference of means: bs_diff_replicates
+bs_diff_replicates = bs_replicates_2012 - bs_replicates_1975
+
+# Compute 95% confidence interval: conf_int
+conf_int = np.percentile(bs_diff_replicates, [2.5, 97.5])
+
+# Print the results
+print('difference of means =', mean_diff, 'mm')
+print('95% confidence interval =', conf_int, 'mm')
+
+
+Hypothesis testing
+
+# Compute mean of combined data set: combined_mean
+combined_mean = np.mean(np.concatenate((bd_1975, bd_2012)))
+
+# Shift the samples
+bd_1975_shifted = bd_1975 - np.mean(bd_1975) + combined_mean
+bd_2012_shifted = bd_2012 - np.mean(bd_2012) + combined_mean
+
+# Get bootstrap replicates of shifted data sets
+bs_replicates_1975 = draw_bs_reps(bd_1975_shifted, np.mean, 10000)
+bs_replicates_2012 = draw_bs_reps(bd_2012_shifted, np.mean, 10000)
+
+# Compute replicates of difference of means: bs_diff_replicates
+bs_diff_replicates = bs_replicates_2012 - bs_replicates_1975
+
+# Compute the p-value
+p = np.sum(bs_diff_replicates >= mean_diff) / len(bs_diff_replicates)
+
+# Print p-value
+print('p =', p)
+
